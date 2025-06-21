@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 # mps
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-print(f"Using device: {device}")
+#device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+#print(f"Using device: {device}")
 
 
 def load_nib_image(file_path):
@@ -39,7 +39,7 @@ def main():
     model = build_sam2(
         config_file="sam2_hiera_s.yaml",
         ckpt_path="./checkpoints/sam2_hiera_small.pt",
-        device=device,
+        device='cpu',
         mode="eval",
         hydra_overrides_extra=[],
         apply_postprocessing=True,
@@ -54,17 +54,24 @@ def main():
 
     # get slices
     start_index = 45
-    end_index = 95
+    end_index = 71
     interval = 5
+    save = True
+    point_coords = np.array([[112, 83],[109,86],[109,86],[109,86],[109,86],[121,79]])  # point in the middle
+    set = 0
+
     for slice_index in range(start_index, end_index, interval):  # sample slices
         slice = get_slice(data, slice_index)
 
         predictor.set_image(slice)
         #point_coords = np.array([[92, 97.5],[158,82],[119,111],[173,89.4]])  # point in the middle
         #point_labels = np.array([1,1,1,1]) # front
-        box = np.array([[80, 70, 149, 125]])  # box around the point
+        #point_coords = np.array([[109, 86]])  # point in the middle
+        point_labels = np.array([1])
+        box = np.array([[70, 150, 100, 110]])  # box around the point
         # inference
-        masks, quality, logits = predictor.predict(box=box,multimask_output=False)
+        masks, quality, logits = predictor.predict(point_coords=point_coords[set].reshape(1,2),point_labels=point_labels,box=box,multimask_output=False)
+        set += 1
 
         # set mask
         mask_volume[:, :, slice_index] = masks[0].astype(np.uint8) 
@@ -77,10 +84,11 @@ def main():
     # plt.show()
 
     # save mask volume
-    mask_nifti = nib.Nifti1Image(mask_volume, affine)
-    output_path = "../output_mask.nii"
-    nib.save(mask_nifti, output_path)
-    print(f"Mask volume saved to {output_path}")
+    if save:
+        mask_nifti = nib.Nifti1Image(mask_volume, affine)
+        output_path = "../output_mask.nii"
+        nib.save(mask_nifti, output_path)
+        print(f"Mask volume saved to {output_path}")
 
 
 if __name__ == "__main__":
