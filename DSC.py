@@ -38,8 +38,8 @@ def dsc_score(pred_mask, gt_mask):
     return dsc
 
 def main():
-    start_index = 53
-    end_index = 54
+    start_index = 34
+    end_index = 71
     type = 2
 
     pred_path = "../archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData/BraTS20_Training_001/pred_mask.seg.nrrd"  # seg

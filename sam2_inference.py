@@ -93,8 +93,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # You can now use the model for inference or further training
-    # For example, to run inference on a sample input:
-    # sample_input = torch.randn(1, 3, 224, 224).to(device)  # Adjust shape as needed
-    # output = model(sample_input)
-    # print(f"Output shape: {output.shape}")
